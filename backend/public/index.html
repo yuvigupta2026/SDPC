@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MCQ to Google Form</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4CAF50">
+</head>
+<body>
+
+  <h2>MCQ to Google Form</h2>
+<link rel="manifest" href="/manifest.json">
+
+
+  <textarea id="mcq" rows="10" cols="50">
+What is 2+2?
+4
+5
+6
+  </textarea>
+  <br><br>
+
+  <button onclick="convert()">Create Google Form</button>
+
+  <script>
+    function convert() {
+      const text = document.getElementById("mcq").value;
+
+      fetch("/api/convert", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ mcqText: text })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.formUrl) {
+          window.location.href = data.formUrl;
+        } else {
+          alert("Error: " + JSON.stringify(data));
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
