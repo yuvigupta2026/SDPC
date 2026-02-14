@@ -27,13 +27,17 @@ mongoose
 
 // 4. Routes
 app.use(express.static("public"));
-app.use(
-  session({
-    secret: "secret",
-    resave: false,
-    saveUninitialized: false
-  })
-);
+app.set("trust proxy", 1);
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true
+  }
+}));
+
 
 app.use(passport.initialize());
 app.use(passport.session());
