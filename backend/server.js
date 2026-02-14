@@ -26,7 +26,17 @@ mongoose
   .catch(err => console.error("MongoDB error:", err));
 
 // 4. Routes
+function ensureAuth(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login.html");
+}
 app.use(express.static("public"));
+
+app.get("/", ensureAuth, (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
 app.set("trust proxy", 1);
 
 app.use(session({

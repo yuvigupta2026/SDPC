@@ -22,7 +22,7 @@ router.get(
     failureRedirect: "/"
   }),
   (req, res) => {
-    res.send("Google Auth Successful. You can now use /api/convert");
+    res.redirect("/");
   }
 );
 
