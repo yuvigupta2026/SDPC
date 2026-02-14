@@ -1,62 +1,88 @@
 require("dotenv").config();
 
-const session = require("express-session");
-const passport = require("passport");
-require("./config/passport");
-
-// 1. Load environment variables
-require("dotenv").config(); 
-
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const session = require("express-session");
+const passport = require("passport");
+
+require("./config/passport");
 
 const app = express();
 
-// 2. Middlewares
+/* ===============================
+   1️⃣ Basic Middlewares
+================================ */
 app.use(cors());
 app.use(express.json());
 
-// 3. Database connection
-const dbConnection = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/sdpc";
+/* ===============================
+   2️⃣ Database Connection
+================================ */
+const dbConnection =
+  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/sdpc";
 
 mongoose
   .connect(dbConnection)
   .then(() => console.log(`MongoDB connected to: ${dbConnection}`))
-  .catch(err => console.error("MongoDB error:", err));
+  .catch((err) => console.error("MongoDB error:", err));
 
-// 4. Routes
+/* ===============================
+   3️⃣ Sessions (MUST COME BEFORE PASSPORT)
+================================ */
+app.set("trust proxy", 1);
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "session_secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: true, // Render uses HTTPS
+    },
+  })
+);
+
+/* ===============================
+   4️⃣ Passport
+================================ */
+app.use(passport.initialize());
+app.use(passport.session());
+
+/* ===============================
+   5️⃣ Auth Middleware
+================================ */
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
   }
-  res.redirect("/login.html");
+  return res.redirect("/login.html");
 }
-app.use(express.static("public"));
 
+/* ===============================
+   6️⃣ Protected Home Route
+================================ */
 app.get("/", ensureAuth, (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
-app.set("trust proxy", 1);
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: true
-  }
-}));
+/* ===============================
+   7️⃣ Static Files (AFTER PROTECTION)
+================================ */
+app.use(express.static("public"));
 
-
-app.use(passport.initialize());
-app.use(passport.session());
+/* ===============================
+   8️⃣ Routes
+================================ */
 app.use("/auth", require("./routes/googleAuth"));
-app.use("/auth", require("./routes/auth"));        // ✅ NEW (Multi-user login)
-app.use("/api", require("./routes/convert"));     // Convert route (protected later)
-// app.use("/", require("./routes/googleAuth"));     // Google OAuth temporarily removed
+app.use("/auth", require("./routes/auth"));
 
-// 5. Start server
+// Protect API route too
+app.use("/api", ensureAuth, require("./routes/convert"));
+
+/* ===============================
+   9️⃣ Start Server
+================================ */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`SDPC Backend running on port ${PORT}`);
