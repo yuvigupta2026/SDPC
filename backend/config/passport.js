@@ -15,7 +15,7 @@ passport.use(
       const authClient = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        "http://localhost:3000/auth/google/callback"
+        process.env.BASE_URL + "/auth/google/callback"
       );
 
       authClient.setCredentials({
