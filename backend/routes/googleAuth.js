@@ -15,6 +15,11 @@ router.get(
     prompt: "consent"
   })
 );
+router.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect("/login.html");
+  });
+});
 
 router.get(
   "/google/callback",

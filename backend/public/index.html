@@ -5,6 +5,9 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#4CAF50">
 </head>
+
+<h3 id="welcome"></h3>
+<button onclick="logout()">Logout</button>
 <body>
 
   <h2>MCQ to Google Form</h2>
@@ -42,6 +45,22 @@ What is 2+2?
       });
     }
   </script>
+
+  <script>
+  fetch("/auth/user")
+    .then(res => res.json())
+    .then(data => {
+      if (data.name) {
+        document.getElementById("welcome").innerText =
+          "Welcome, " + data.name;
+      }
+    });
+
+  function logout() {
+    window.location.href = "/auth/logout";
+  }
+</script>
+
 
 </body>
 </html>

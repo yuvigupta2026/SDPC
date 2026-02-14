@@ -52,6 +52,13 @@ app.use(passport.session());
 /* ===============================
    5️⃣ Auth Middleware
 ================================ */
+app.get("/login.html", (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect("/");
+  }
+  res.sendFile(__dirname + "/public/login.html");
+});
+
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
@@ -64,6 +71,16 @@ function ensureAuth(req, res, next) {
 ================================ */
 app.get("/", ensureAuth, (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
+});
+app.get("/auth/user", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({
+      name: req.user.displayName,
+      email: req.user.emails?.[0]?.value
+    });
+  } else {
+    res.status(401).json({ message: "Not logged in" });
+  }
 });
 
 /* ===============================
