@@ -1,28 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>MCQ to Google Form</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#4CAF50">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #111827);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+
+    .card {
+      background: #1f2937;
+      width: 90%;
+      max-width: 700px;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      height: 220px;
+      padding: 15px;
+      border-radius: 12px;
+      border: none;
+      background: #111827;
+      color: white;
+      resize: none;
+      font-size: 14px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .primary {
+      background: #4f46e5;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #6366f1;
+    }
+
+    .logout {
+      background: #ef4444;
+      color: white;
+      width: auto;
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .logout:hover {
+      background: #dc2626;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+  </style>
 </head>
 
-<h3 id="welcome"></h3>
-<button onclick="logout()">Logout</button>
+
 <body>
 
-  <h2>MCQ to Google Form</h2>
-<link rel="manifest" href="/manifest.json">
+  <div class="card">
 
+    <div class="top-bar">
+      <div id="welcome"></div>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
 
-  <textarea id="mcq" rows="10" cols="50">
+    <h2>MCQ to Google Form</h2>
+
+    <textarea id="mcq">
 What is 2+2?
 4
 5
 6
-  </textarea>
-  <br><br>
+    </textarea>
 
-  <button onclick="convert()">Create Google Form</button>
+    <button class="primary" onclick="convert()">Create Google Form</button>
+
+    <div class="footer">
+      SDPC • Auto Form Generator
+    </div>
+
+  </div>
 
   <script>
     function convert() {
@@ -44,23 +145,18 @@ What is 2+2?
         }
       });
     }
+    fetch("/auth/user")
+      .then(res => res.json())
+      .then(data => {
+        if (data.name) {
+          document.getElementById("welcome").innerText =
+            "Welcome, " + data.name;
+        }
+      });
+
+    function logout() {
+      window.location.href = "/auth/logout";
+    }
   </script>
-
-  <script>
-  fetch("/auth/user")
-    .then(res => res.json())
-    .then(data => {
-      if (data.name) {
-        document.getElementById("welcome").innerText =
-          "Welcome, " + data.name;
-      }
-    });
-
-  function logout() {
-    window.location.href = "/auth/logout";
-  }
-</script>
-
-
 </body>
 </html>
