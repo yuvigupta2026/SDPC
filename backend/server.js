@@ -1,3 +1,4 @@
+const History = require("./models/history");
 require("dotenv").config();
 
 const express = require("express");
@@ -72,6 +73,12 @@ function ensureAuth(req, res, next) {
 app.get("/", ensureAuth, (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
+
+// 🔒 Protect History Page
+app.get("/history.html", ensureAuth, (req, res) => {
+  res.sendFile(__dirname + "/public/history.html");
+});
+
 app.get("/auth/user", (req, res) => {
   if (req.isAuthenticated()) {
     res.json({
@@ -96,6 +103,20 @@ app.use("/auth", require("./routes/auth"));
 
 // Protect API route too
 app.use("/api", ensureAuth, require("./routes/convert"));
+/* ===============================
+   🔟 History API (Protected)
+================================ */
+app.get("/api/history", ensureAuth, async (req, res) => {
+  try {
+    const history = await History.find({ userId: req.user.id })
+      .sort({ createdAt: -1 });
+
+    res.json(history);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch history" });
+  }
+});
 
 /* ===============================
    9️⃣ Start Server

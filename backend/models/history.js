@@ -1,17 +1,17 @@
 const mongoose = require("mongoose");
 
-const historySchema = new mongoose.Schema({
-  userId: {
-    type: String,
-    required: true
+const historySchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+      index: true   // 🚀 Faster history lookup
+    },
+    formId: String,
+    formUrl: String,
+    mcqText: String
   },
-  formId: String,
-  formUrl: String,
-  mcqText: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+  { timestamps: true }  // 👈 auto adds createdAt & updatedAt
+);
 
 module.exports = mongoose.model("History", historySchema);

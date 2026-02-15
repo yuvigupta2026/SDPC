@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your History</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      padding: 30px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+    }
+
+    a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    small {
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📜 Your Conversion History</h2>
+
+<div id="historyContainer"></div>
+
+<script>
+  fetch("/api/history")
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("historyContainer");
+
+      if (!data.length) {
+        container.innerHTML = "<p>No history found.</p>";
+        return;
+      }
+
+      data.forEach(item => {
+        const date = new Date(item.createdAt);
+
+        const formattedDate = date.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        });
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <p><strong>Form Link:</strong> 
+          <a href="${item.formUrl}" target="_blank">${item.formUrl}</a></p>
+          <small>Created on: ${formattedDate}</small>
+        `;
+
+        container.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById("historyContainer").innerHTML =
+        "<p>Error loading history.</p>";
+    });
+</script>
+
+</body>
+</html>

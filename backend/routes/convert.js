@@ -5,11 +5,8 @@ const { google } = require("googleapis");
 
 const router = express.Router();
 
-router.post("/convert", async (req, res) => {
+router.post("/convert", auth, async (req, res) => {
   try {
-    if (!req.user) {
-  return res.status(401).json({ message: "Login with Google first" });
-}
     if (!global.authClient) {
       return res.status(401).json({ error: "Google not authenticated" });
     }
@@ -30,17 +27,10 @@ router.post("/convert", async (req, res) => {
         }
       }
     });
-    await History.create({
-  userId: req.user.id,
-  formId: form.data.formId,
-  formUrl: `https://docs.google.com/forms/d/${form.data.formId}/edit`,
-  mcqText: req.body.mcqText
-});
-
 
     const formId = form.data.formId;
 
-    // 2️⃣ Add MCQ questions
+    // 2️⃣ Add MCQ Questions
     let requests = [];
 
     questions.forEach((q, index) => {
@@ -70,6 +60,14 @@ router.post("/convert", async (req, res) => {
       requestBody: { requests }
     });
 
+    // 3️⃣ Save History AFTER success
+    await History.create({
+      userId: req.user.id,
+      formId,
+      formUrl: `https://docs.google.com/forms/d/${formId}/edit`,
+      mcqText
+    });
+
     res.json({
       formUrl: `https://docs.google.com/forms/d/${formId}/viewform`
     });
@@ -82,7 +80,7 @@ router.post("/convert", async (req, res) => {
 
 // 🔹 Simple MCQ parser
 function parseMCQ(text) {
-  const blocks = text.split("\n\n");
+  const blocks = text.trim().split("\n\n");
 
   return blocks.map(block => {
     const lines = block.split("\n");

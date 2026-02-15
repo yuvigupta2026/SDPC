@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #111827);
+      color: white;
+      padding: 30px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #1f2937;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .date {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 5px;
+    }
+
+    .btn {
+      background: #4f46e5;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background: #6366f1;
+    }
+
+    .top-bar {
+      text-align: right;
+      margin-bottom: 20px;
+    }
+
+    .logout {
+      background: #ef4444;
+    }
+
+    .logout:hover {
+      background: #dc2626;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="top-bar">
+  <button class="btn logout" onclick="logout()">Logout</button>
+</div>
+
+<h2>Your Form History</h2>
+
+<div id="history"></div>
+
+<script>
+  async function loadHistory() {
+    const res = await fetch("/api/history");
+    const data = await res.json();
+
+    const container = document.getElementById("history");
+
+    if (!data.length) {
+      container.innerHTML = "<p>No forms created yet.</p>";
+      return;
+    }
+
+    data.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <strong>Google Form</strong>
+        <div class="date">
+          Created: ${new Date(item.createdAt).toLocaleString()}
+        </div>
+        <button class="btn" onclick="openForm('${item.formUrl}')">
+          Open Form
+        </button>
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  function openForm(url) {
+    window.open(url, "_blank");
+  }
+
+  function logout() {
+    window.location.href = "/auth/logout";
+  }
+
+  loadHistory();
+</script>
+
+</body>
+</html>
