@@ -36,6 +36,27 @@
 <h2>📜 Your Conversion History</h2>
 
 <div id="historyContainer"></div>
+<style>
+  .back-btn {
+    padding: 10px 18px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .back-btn:hover {
+    background-color: #45a049;
+  }
+</style>
+
+<button class="back-btn" onclick="window.location.href='/'">
+  ⬅ Back to Home
+</button>
+
 
 <script>
   fetch("/api/history")
