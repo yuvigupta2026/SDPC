@@ -31,20 +31,23 @@ mongoose
 /* ===============================
    3️⃣ Sessions (MUST COME BEFORE PASSPORT)
 ================================ */
-app.set("trust proxy", 1);
+app.set("trust proxy", 1);   // VERY IMPORTANT for Render
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "session_secret",
     resave: false,
     saveUninitialized: false,
+    proxy: true,   // ⭐ REQUIRED on Render
     cookie: {
-      secure: process.env.NODE_ENV === "production", // ⭐ FIXED
+      secure: true,        // Render uses HTTPS
       httpOnly: true,
-      sameSite: "lax"
+      sameSite: "none",    // ⭐ VERY IMPORTANT
+      maxAge: 24 * 60 * 60 * 1000  // 1 day
     },
   })
 );
+
 
 
 /* ===============================
