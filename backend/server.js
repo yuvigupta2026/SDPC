@@ -32,6 +32,8 @@ mongoose
 /* ===============================
    3️⃣ Sessions (BEFORE PASSPORT)
 ================================ */
+const MongoStore = require("connect-mongo")(session);
+
 app.set("trust proxy", 1);
 
 app.use(
@@ -39,18 +41,19 @@ app.use(
     secret: process.env.SESSION_SECRET || "session_secret",
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions"
+    store: new MongoStore({
+      url: process.env.MONGO_URI,
+      collection: "sessions"
     }),
     cookie: {
-      secure: true,          // Keep TRUE on Render
+      secure: true,
       httpOnly: true,
       sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000
     }
   })
 );
+
 
 /* ===============================
    4️⃣ Passport
