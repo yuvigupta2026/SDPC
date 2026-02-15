@@ -166,15 +166,23 @@ function convert(){
     body:JSON.stringify({mcqText:text})
   })
   .then(res=>res.json())
-  .then(data=>{
-    if(data.formUrl){
-      alert("Form Created Successfully!");
-      loadHistory(); // refresh history
-      window.open(data.formUrl,"_blank");
-    }else{
-      alert("Error creating form");
-    }
-  });
+  .then(async res => {
+  const data = await res.json();
+  console.log("Server Response:", data);   // 👈 Add this line
+
+  if(res.ok && data.formUrl){
+    alert("Form Created Successfully!");
+    loadHistory();
+    window.open(data.formUrl,"_blank");
+  }else{
+    alert("Error: " + JSON.stringify(data));
+  }
+})
+.catch(err => {
+  alert("Request Failed");
+  console.log(err);
+});
+
 }
 
 function toggleHistory(){
