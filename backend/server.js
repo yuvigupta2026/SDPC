@@ -31,7 +31,8 @@ mongoose
 /* ===============================
    3️⃣ Sessions (MUST COME BEFORE PASSPORT)
 ================================ */
-const MongoStore = require("connect-mongo");
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 
 app.set("trust proxy", 1);
 
