@@ -1,3 +1,4 @@
+const History = require("../models/history");
 const auth = require("../middleware/authMiddleware");
 const express = require("express");
 const { google } = require("googleapis");
@@ -29,6 +30,13 @@ router.post("/convert", async (req, res) => {
         }
       }
     });
+    await History.create({
+  userId: req.user.id,
+  formId: form.data.formId,
+  formUrl: `https://docs.google.com/forms/d/${form.data.formId}/edit`,
+  mcqText: req.body.mcqText
+});
+
 
     const formId = form.data.formId;
 
