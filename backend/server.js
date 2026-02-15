@@ -4,7 +4,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const session = require("express-session");
+const session = require("express-session");   // ✅ ONLY ONE SESSION
+const MongoStore = require("connect-mongo");
 const passport = require("passport");
 
 require("./config/passport");
@@ -29,11 +30,8 @@ mongoose
   .catch((err) => console.error("MongoDB error:", err));
 
 /* ===============================
-   3️⃣ Sessions (MUST COME BEFORE PASSPORT)
+   3️⃣ Sessions (BEFORE PASSPORT)
 ================================ */
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-
 app.set("trust proxy", 1);
 
 app.use(
@@ -46,7 +44,7 @@ app.use(
       collectionName: "sessions"
     }),
     cookie: {
-      secure: true,
+      secure: true,          // Keep TRUE on Render
       httpOnly: true,
       sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000
@@ -78,13 +76,12 @@ function ensureAuth(req, res, next) {
 }
 
 /* ===============================
-   6️⃣ Protected Home Route
+   6️⃣ Protected Routes
 ================================ */
 app.get("/", ensureAuth, (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
-// 🔒 Protect History Page
 app.get("/history.html", ensureAuth, (req, res) => {
   res.sendFile(__dirname + "/public/history.html");
 });
@@ -101,21 +98,18 @@ app.get("/auth/user", (req, res) => {
 });
 
 /* ===============================
-   7️⃣ Static Files (AFTER PROTECTION)
+   7️⃣ Static Files
 ================================ */
 app.use(express.static("public"));
 
 /* ===============================
-   8️⃣ Routes
+   8️⃣ Auth & API Routes
 ================================ */
 app.use("/auth", require("./routes/googleAuth"));
 app.use("/auth", require("./routes/auth"));
 
-// Protect API route too
 app.use("/api", ensureAuth, require("./routes/convert"));
-/* ===============================
-   🔟 History API (Protected)
-================================ */
+
 app.get("/api/history", ensureAuth, async (req, res) => {
   try {
     const history = await History.find({ userId: req.user.id })
