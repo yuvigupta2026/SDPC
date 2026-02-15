@@ -5,7 +5,6 @@
 <title>MCQ Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<a href="/history.html">📊 View History</a>
 <style>
 body{
   margin:0;
@@ -87,7 +86,7 @@ button{
 .history-btn{
   background:#10b981;
   color:white;
-  margin-left:10px;
+  margin-right:10px;
 }
 
 .history-section{
@@ -104,11 +103,6 @@ button{
   border-radius:8px;
   margin-bottom:10px;
   font-size:13px;
-}
-
-a{
-  color:#60a5fa;
-  text-decoration:none;
 }
 
 .footer{
@@ -157,75 +151,105 @@ What is 2+2?
 
 <script>
 
+/* ===============================
+   CREATE FORM
+================================ */
 function convert(){
-  const text=document.getElementById("mcq").value;
+  const text = document.getElementById("mcq").value;
 
-  fetch("/api/convert",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({mcqText:text})
+  fetch("/api/convert", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",   // IMPORTANT for session
+    body: JSON.stringify({ mcqText: text })
   })
-  .then(res=>res.json())
-  .then(async res => {
-  const data = await res.json();
-  console.log("Server Response:", data);   // 👈 Add this line
-
-  if(res.ok && data.formUrl){
-    alert("Form Created Successfully!");
-    loadHistory();
-    window.open(data.formUrl,"_blank");
-  }else{
-    alert("Error: " + JSON.stringify(data));
-  }
-})
-.catch(err => {
-  alert("Request Failed");
-  console.log(err);
-});
-
+  .then(res => {
+    if (!res.ok) {
+      throw new Error("Unauthorized or Server Error");
+    }
+    return res.json();
+  })
+  .then(data => {
+    if (data.formUrl) {
+      alert("Form Created Successfully!");
+      loadHistory(); 
+      window.open(data.formUrl, "_blank");
+    } else {
+      alert("Error creating form");
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    alert("Login expired. Please login again.");
+  });
 }
 
+/* ===============================
+   TOGGLE HISTORY
+================================ */
 function toggleHistory(){
-  const box=document.getElementById("historyBox");
-  if(box.style.display==="none" || box.style.display===""){
-    box.style.display="block";
+  const box = document.getElementById("historyBox");
+
+  if(box.style.display === "none" || box.style.display === ""){
+    box.style.display = "block";
     loadHistory();
-  }else{
-    box.style.display="none";
+  } else {
+    box.style.display = "none";
   }
 }
 
+/* ===============================
+   LOAD HISTORY
+================================ */
 function loadHistory(){
-  fetch("/api/history")
-  .then(res=>res.json())
+  fetch("/api/history", {
+    credentials: "include"
+  })
+  .then(res => res.json())
   .then(data=>{
-    const list=document.getElementById("historyList");
-    list.innerHTML="";
-    if(data.length===0){
-      list.innerHTML="<p>No history found.</p>";
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    if(data.length === 0){
+      list.innerHTML = "<p>No history found.</p>";
       return;
     }
+
     data.forEach(item=>{
-      list.innerHTML+=`
+      list.innerHTML += `
         <div class="history-item">
-          <div><strong>Date:</strong> ${new Date(item.createdAt).toLocaleString()}</div>
-          <div><a href="${item.formUrl}" target="_blank">Open Form</a></div>
+          <div><strong>Date:</strong> 
+          ${new Date(item.createdAt).toLocaleString("en-IN")}
+          </div>
+          <div>
+            <a href="${item.formUrl}" target="_blank" style="color:#60a5fa;">
+              Open Form
+            </a>
+          </div>
         </div>
       `;
     });
   });
 }
 
-fetch("/auth/user")
-.then(res=>res.json())
+/* ===============================
+   LOAD USER NAME
+================================ */
+fetch("/auth/user", { credentials: "include" })
+.then(res => res.json())
 .then(data=>{
   if(data.name){
-    document.getElementById("welcome").innerText="Welcome, "+data.name;
+    document.getElementById("welcome").innerText = "Welcome, " + data.name;
   }
 });
 
+/* ===============================
+   LOGOUT
+================================ */
 function logout(){
-  window.location.href="/auth/logout";
+  window.location.href = "/auth/logout";
 }
 
 </script>
