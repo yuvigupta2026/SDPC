@@ -162,7 +162,7 @@ function convert(){
     headers: {
       "Content-Type": "application/json"
     },
-    credentials: "include",   // IMPORTANT for session
+      // IMPORTANT for session
     body: JSON.stringify({ mcqText: text })
   })
   .then(res => {
@@ -205,7 +205,7 @@ function toggleHistory(){
 ================================ */
 function loadHistory(){
   fetch("/api/history", {
-    credentials: "include"
+
   })
   .then(res => res.json())
   .then(data=>{
