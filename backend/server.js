@@ -39,10 +39,13 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true, // Render uses HTTPS
+      secure: process.env.NODE_ENV === "production", // ⭐ FIXED
+      httpOnly: true,
+      sameSite: "lax"
     },
   })
 );
+
 
 /* ===============================
    4️⃣ Passport
