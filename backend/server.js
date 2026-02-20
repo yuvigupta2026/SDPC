@@ -11,6 +11,14 @@ const MongoStore = require("connect-mongo").default; // ✅ Correct for modern v
 require("./config/passport");
 
 const app = express();
+const cors = require("cors");
+
+app.use(cors({
+  origin: "https://sdpc-klnt.onrender.com",
+  credentials: true
+}));
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 /* ===============================
    1️⃣ Basic Middlewares

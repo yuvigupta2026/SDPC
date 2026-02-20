@@ -138,38 +138,71 @@ What is 2+2?
 <script>
 
 /* ===============================
+   AUTO REDIRECT IF NOT LOGGED IN
+================================ */
+async function checkLogin() {
+  try {
+    const res = await fetch("/auth/user", {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      window.location.href = "/login.html";
+      return;
+    }
+
+    const data = await res.json();
+    document.getElementById("welcome").innerText =
+      "Welcome, " + (data.name || "User");
+
+  } catch (err) {
+    window.location.href = "/login.html";
+  }
+}
+
+checkLogin();
+
+/* ===============================
    CREATE FORM
 ================================ */
-function convert(){
+async function convert() {
+
   const text = document.getElementById("mcq").value;
 
-  fetch("/api/convert", {
-    method: "POST",
-    credentials: "include",  // ⭐ FIXED
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ mcqText: text })
-  })
-  .then(res => {
-    if (!res.ok) {
-      throw new Error("Unauthorized or Server Error");
+  try {
+    const res = await fetch("/api/convert", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ mcqText: text })
+    });
+
+    if (res.status === 401) {
+      alert("Session expired. Please login again.");
+      window.location.href = "/login.html";
+      return;
     }
-    return res.json();
-  })
-  .then(data => {
+
+    if (!res.ok) {
+      throw new Error("Server error");
+    }
+
+    const data = await res.json();
+
     if (data.formUrl) {
       alert("Form Created Successfully!");
       loadHistory();
       window.open(data.formUrl, "_blank");
     } else {
-      alert("Error creating form");
+      alert(data.error || "Error creating form");
     }
-  })
-  .catch(err => {
-    console.log(err);
-    alert("Login expired. Please login again.");
-  });
+
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  }
 }
 
 /* ===============================
@@ -189,12 +222,19 @@ function toggleHistory(){
 /* ===============================
    LOAD HISTORY
 ================================ */
-function loadHistory(){
-  fetch("/api/history", {
-    credentials: "include"  // ⭐ FIXED
-  })
-  .then(res => res.json())
-  .then(data=>{
+async function loadHistory(){
+  try {
+    const res = await fetch("/api/history", {
+      credentials: "include"
+    });
+
+    if (res.status === 401) {
+      window.location.href = "/login.html";
+      return;
+    }
+
+    const data = await res.json();
+
     const list = document.getElementById("historyList");
     list.innerHTML = "";
 
@@ -217,19 +257,11 @@ function loadHistory(){
         </div>
       `;
     });
-  });
-}
 
-/* ===============================
-   LOAD USER NAME
-================================ */
-fetch("/auth/user", { credentials: "include" })
-.then(res => res.json())
-.then(data=>{
-  if(data.name){
-    document.getElementById("welcome").innerText = "Welcome, " + data.name;
+  } catch (err) {
+    console.error(err);
   }
-});
+}
 
 /* ===============================
    LOGOUT
