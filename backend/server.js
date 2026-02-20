@@ -5,8 +5,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const session = require("express-session");   // ✅ ONLY ONE SESSION
-const MongoStore = require("connect-mongo");
 const passport = require("passport");
+const MongoStore = require("connect-mongo")(session);
 
 require("./config/passport");
 
@@ -32,7 +32,6 @@ mongoose
 /* ===============================
    3️⃣ Sessions (BEFORE PASSPORT)
 ================================ */
-const MongoStore = require("connect-mongo")(session);
 
 app.set("trust proxy", 1);
 
