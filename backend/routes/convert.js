@@ -7,19 +7,30 @@ const router = express.Router();
 
 router.post("/convert", auth, async (req, res) => {
   try {
+    console.log("🔎 User:", req.user);
+
+    // 1️⃣ Check Google Auth
     if (!global.authClient) {
       return res.status(401).json({ error: "Google not authenticated" });
     }
 
-    const mcqText = req.body.mcqText;
-    const questions = parseMCQ(mcqText);
+    // 2️⃣ Validate Input
+    if (!req.body.mcqText) {
+      return res.status(400).json({ error: "MCQ text is required" });
+    }
+
+    const questions = parseMCQ(req.body.mcqText);
+
+    if (!questions.length) {
+      return res.status(400).json({ error: "No valid questions found" });
+    }
 
     const forms = google.forms({
       version: "v1",
       auth: global.authClient
     });
 
-    // 1️⃣ Create Google Form
+    // 3️⃣ Create Google Form
     const form = await forms.forms.create({
       requestBody: {
         info: {
@@ -30,68 +41,80 @@ router.post("/convert", auth, async (req, res) => {
 
     const formId = form.data.formId;
 
-    // 2️⃣ Add MCQ Questions
-    let requests = [];
+    console.log("✅ Form Created:", formId);
 
-    questions.forEach((q, index) => {
-      requests.push({
-        createItem: {
-          item: {
-            title: q.question,
-            questionItem: {
-              question: {
-                required: true,
-                choiceQuestion: {
-                  type: "RADIO",
-                  options: q.options.map(opt => ({
-                    value: opt
-                  }))
-                }
+    // 4️⃣ Add Questions
+    const requests = questions.map((q, index) => ({
+      createItem: {
+        item: {
+          title: q.question,
+          questionItem: {
+            question: {
+              required: true,
+              choiceQuestion: {
+                type: "RADIO",
+                options: q.options.map(opt => ({
+                  value: opt
+                }))
               }
             }
-          },
-          location: { index }
-        }
-      });
-    });
+          }
+        },
+        location: { index }
+      }
+    }));
 
     await forms.forms.batchUpdate({
       formId,
       requestBody: { requests }
     });
 
-    // 3️⃣ Save History AFTER success
+    console.log("✅ Questions Added");
+
+    // 5️⃣ Save History
     await History.create({
-      userId: req.user.id,
+      userId: req.user?.id,
       formId,
       formUrl: `https://docs.google.com/forms/d/${formId}/edit`,
-      mcqText
+      mcqText: req.body.mcqText
     });
 
+    console.log("✅ History Saved");
+
+    // 6️⃣ Send Response
     res.json({
       formUrl: `https://docs.google.com/forms/d/${formId}/viewform`
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Form creation failed" });
+
+    console.error("❌ FULL ERROR:");
+    console.error(err.response?.data || err.message || err);
+
+    res.status(500).json({
+      error: err.response?.data || err.message || "Form creation failed"
+    });
   }
 });
 
-// 🔹 Simple MCQ parser
+// 🔹 Improved MCQ parser
 function parseMCQ(text) {
-  const blocks = text.trim().split("\n\n");
+  const blocks = text
+    .split(/\n\s*\n/)       // split by blank lines
+    .map(b => b.trim())
+    .filter(b => b);
 
   return blocks.map(block => {
-    const lines = block.split("\n");
-    const question = lines[0];
-    const options = lines.slice(1).filter(l => l.trim());
+    const lines = block
+      .split("\n")
+      .map(l => l.trim())
+      .filter(l => l);
 
     return {
-      question,
-      options
+      question: lines[0],
+      options: lines.slice(1)
     };
-  });
+  }).filter(q => q.question && q.options.length > 0);
 }
 
 module.exports = router;
