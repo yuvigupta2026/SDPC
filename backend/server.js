@@ -4,9 +4,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const session = require("express-session");   // ✅ ONLY ONE SESSION
+const session = require("express-session");
 const passport = require("passport");
-const MongoStore = require("connect-mongo")(session);
+const MongoStore = require("connect-mongo"); // ✅ Correct for modern version
 
 require("./config/passport");
 
@@ -40,19 +40,18 @@ app.use(
     secret: process.env.SESSION_SECRET || "session_secret",
     resave: false,
     saveUninitialized: false,
-    store: new MongoStore({
-      url: process.env.MONGO_URI,
-      collection: "sessions"
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions",
     }),
     cookie: {
-      secure: true,
+      secure: true, // keep TRUE on Render
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000
-    }
+      maxAge: 24 * 60 * 60 * 1000,
+    },
   })
 );
-
 
 /* ===============================
    4️⃣ Passport
@@ -92,7 +91,7 @@ app.get("/auth/user", (req, res) => {
   if (req.isAuthenticated()) {
     res.json({
       name: req.user.displayName,
-      email: req.user.emails?.[0]?.value
+      email: req.user.emails?.[0]?.value,
     });
   } else {
     res.status(401).json({ message: "Not logged in" });
@@ -114,8 +113,9 @@ app.use("/api", ensureAuth, require("./routes/convert"));
 
 app.get("/api/history", ensureAuth, async (req, res) => {
   try {
-    const history = await History.find({ userId: req.user.id })
-      .sort({ createdAt: -1 });
+    const history = await History.find({ userId: req.user.id }).sort({
+      createdAt: -1,
+    });
 
     res.json(history);
   } catch (err) {
