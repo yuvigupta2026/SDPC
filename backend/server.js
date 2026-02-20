@@ -40,16 +40,16 @@ app.use(
     secret: process.env.SESSION_SECRET || "session_secret",
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
+    store: new MongoStore({
+      mongooseConnection: mongoose.connection,
+      collection: "sessions"
     }),
     cookie: {
-      secure: true, // keep TRUE on Render
+      secure: true,
       httpOnly: true,
       sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    },
+      maxAge: 24 * 60 * 60 * 1000
+    }
   })
 );
 
