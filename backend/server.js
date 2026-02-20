@@ -6,7 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
-const MongoStore = require("connect-mongo"); // ✅ Correct for modern version
+const MongoStore = require("connect-mongo").default; // ✅ Correct for modern version
 
 require("./config/passport");
 
@@ -40,9 +40,9 @@ app.use(
     secret: process.env.SESSION_SECRET || "session_secret",
     resave: false,
     saveUninitialized: false,
-    store: new MongoStore({
-      mongooseConnection: mongoose.connection,
-      collection: "sessions"
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URI,
+      collectionName: "sessions"
     }),
     cookie: {
       secure: true,
