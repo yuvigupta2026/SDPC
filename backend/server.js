@@ -52,15 +52,15 @@ app.use(
     secret: process.env.SESSION_SECRET || "session_secret",
     resave: false,
     saveUninitialized: false,
+    proxy: true,   // ⭐ VERY IMPORTANT FOR RENDER
     store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
       collectionName: "sessions",
     }),
     cookie: {
-      secure: process.env.NODE_ENV === "production", // important
+      secure: true,        // required for HTTPS
       httpOnly: true,
-      sameSite:
-        process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: "none",    // required for cross-site cookies
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
