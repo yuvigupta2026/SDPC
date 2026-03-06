@@ -2,6 +2,7 @@
   "dependencies": {
     "connect-mongo": "^4.6.0",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6"
+    "cors": "^2.8.6",
+    "express-session": "^1.19.0"
   }
 }
