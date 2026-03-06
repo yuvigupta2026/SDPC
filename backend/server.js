@@ -6,7 +6,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
-const MongoStore = require("connect-mongo").default;
+const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 
 require("./config/passport");
@@ -17,14 +17,14 @@ const app = express();
    1️⃣ Basic Middlewares
 ================================ */
 
-// TRUST RENDER PROXY
+// Trust Render proxy
 app.set("trust proxy", 1);
 
 // CORS (ONLY ONCE)
 app.use(
   cors({
-    origin: "https://sdpc-klnt.onrender.com",
-    credentials: true,
+    origin: true,
+    credentials: true
   })
 );
 
@@ -49,20 +49,22 @@ mongoose
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "session_secret",
+    secret: process.env.SESSION_SECRET || "sdpc_secret",
     resave: false,
     saveUninitialized: false,
-    proxy: true,   // ⭐ VERY IMPORTANT FOR RENDER
+    proxy: true,
+
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-      collectionName: "sessions",
+      mongoUrl: dbConnection,
+      collectionName: "sessions"
     }),
+
     cookie: {
-      secure: true,        // required for HTTPS
+      secure: true,
       httpOnly: true,
-      sameSite: "lax",    // required for cross-site cookies
-      maxAge: 24 * 60 * 60 * 1000,
-    },
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000
+    }
   })
 );
 
@@ -107,7 +109,7 @@ app.get("/auth/user", (req, res) => {
   if (req.isAuthenticated()) {
     return res.json({
       name: req.user.displayName,
-      email: req.user.emails?.[0]?.value,
+      email: req.user.emails?.[0]?.value
     });
   }
   res.status(401).json({ message: "Not logged in" });
@@ -131,14 +133,14 @@ app.use("/api", ensureAuth, require("./routes/convert"));
 app.get("/api/history", ensureAuth, async (req, res) => {
   try {
     const history = await History.find({
-      userId: req.user.id,
+      userId: req.user.id
     }).sort({ createdAt: -1 });
 
     res.json(history);
   } catch (err) {
     console.error(err);
     res.status(500).json({
-      message: "Failed to fetch history",
+      message: "Failed to fetch history"
     });
   }
 });
