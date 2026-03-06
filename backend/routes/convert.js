@@ -5,7 +5,7 @@ const { google } = require("googleapis");
 
 const router = express.Router();
 
-router.post("/convert", auth, async (req, res) => {
+router.post("/convert", async (req, res) => {
   try {
     console.log("🔎 User:", req.user);
 
